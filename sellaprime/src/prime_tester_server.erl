@@ -1,0 +1,2 @@
+-module(prime_tester_server).
+-compile(export_all).
