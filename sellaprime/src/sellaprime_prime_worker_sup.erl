@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc sellaprime top level supervisor.
+%% @doc sellaprime prime worker supervisor
 %% @end
 %%%-------------------------------------------------------------------
 
--module(sellaprime_sup).
+-module(sellaprime_prime_worker_sup).
 
 -behaviour(supervisor).
 
@@ -26,34 +26,19 @@ start_link() ->
 %%                  type => worker(),       % optional
 %%                  modules => modules()}   % optional
 init([]) ->
-    SupFlags = #{strategy => one_for_all, % if the loadbalancer crashes, lets crash the worker supervisor as well
+    SupFlags = #{strategy => one_for_one,
                  intensity => 1,
                  period => 1},
     ChildSpecs = [
-        % exercise 2
-        % #{
-        %     id => prime_tester_server1,
-        %     start => {prime_tester_server, start_link, [prime_tester_server1, default_prime_tester]}
-        % },
-        % #{
-        %     id => prime_tester_server2,
-        %     start => {prime_tester_server, start_link, [prime_tester_server2, default_prime_tester]}
-        % },
-        % #{
-        %   id => queue_server,
-        %   start => {queue_server, start_link, [[prime_tester_server1, prime_tester_server2]]}  
-        %  }
-        
         %exercise 3
         #{
-            id => sellaprime_loadbalancer,
-            start => {sellaprime_loadbalancer, start_link, [[prime_worker_1, prime_worker_2]]}   
-         },
+            id => prime_worker_1,
+            start => {sellaprime_prime_server, start_link, [prime_worker_1]}
+          },
         #{
-            id => sellaprime_prime_worker_sup,
-            start => {sellaprime_prime_worker_sup, start_link, []},
-            type => supervisor
-        }
+            id => prime_worker_2,
+            start => {sellaprime_prime_server, start_link, [prime_worker_2]}
+          }
         ],
     {ok, {SupFlags, ChildSpecs}}.
 
