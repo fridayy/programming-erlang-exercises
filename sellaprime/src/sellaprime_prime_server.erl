@@ -3,17 +3,22 @@
 
 -behaviour(gen_server).
 
--record(state, {id, requests=queue:new(), busy=false, callbackModule=default_prime_tester}).
+-record(state, {
+    id :: atom(), 
+    requests=queue:new(),
+    busy=false,
+    callbackModule=default_prime_tester
+}).
 
-
-    
-
+-spec accept_work(atom(), #{n => number(), from => {pid(), reference()}}) -> ok.
 accept_work(WorkerId, Request) ->
     gen_server:call(WorkerId,{accept, Request}).
 
+-spec utilization(atom()) -> ok.
 utilization(WorkerId) ->
     gen_server:call(WorkerId, {utilization}).
 
+-spec free(atom()) -> ok.
 free(WorkerId) ->
     gen_server:call(WorkerId, {free}).
 
@@ -71,7 +76,7 @@ terminate(Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-do_async_work(WorkerId, CbMod, #{n := CheckPrime, from := {Pid, Ref}} = Request) ->
+do_async_work(WorkerId, CbMod, #{n := CheckPrime, from := {Pid, Ref}}) ->
     spawn_link(fun() ->
         io:format("[~p](~p) Checking if ~p is prime~n", [WorkerId, self(), CheckPrime]),
         Result = CbMod:is_prime(CheckPrime),
